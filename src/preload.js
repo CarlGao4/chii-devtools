@@ -9,7 +9,7 @@ function injectChiiDevtools(port) {
 }
 
 
-ipcRenderer.invoke("LiteLoader.chii_devtools.ready").then(port => {
+ipcRenderer.invoke("mojinran.chii_devtools.ready").then(port => {
     injectChiiDevtools(port);
     navigation.addEventListener("navigatesuccess", () => {
         injectChiiDevtools(port);

@@ -1,6 +1,8 @@
 const chii = require("chii");
+const path = require("path");
 const net = require("net");
-const { BrowserWindow, ipcMain } = require("electron");
+const { BrowserWindow, ipcMain, session } = require("electron");
+const { slug } = require("../manifest.json");
 
 
 // 获取空闲端口号
@@ -16,7 +18,7 @@ chii.start({ port });
 
 
 // 把端口传给渲染进程
-ipcMain.handle("LiteLoader.chii_devtools.ready", () => port);
+ipcMain.handle("mojinran.chii_devtools.ready", () => port);
 
 
 // 打开DevTools
@@ -25,14 +27,15 @@ async function openDevTools(window) {
     const targets_url = `http://localhost:${port}/targets`;
     const targets = await (await fetch(targets_url)).json();
     for (const target of targets.targets.reverse()) {
-        if (target.url != current_url) {
-            continue;
-        }
-        // DevTools URL
-        const params = `?ws=localhost:${port}/client/LiteLoader?target=${target.id}`;
-        const devtools_url = `http://localhost:${port}/front_end/chii_app.html${params}`;
-        // 加载DevTools页面
-        const devtools_window = new BrowserWindow({ autoHideMenuBar: true });
+        if (target.url != current_url) continue;
+        const devtools_params = `?ws=localhost:${port}/client/LiteLoader?target=${target.id}`;
+        const devtools_url = `http://localhost:${port}/front_end/chii_app.html${devtools_params}`;
+        const devtools_window = new BrowserWindow({
+            autoHideMenuBar: true,
+            webPreferences: {
+                session: session.fromPath(path.join(LiteLoader.path.data, slug))
+            }
+        });
         devtools_window.loadURL(devtools_url);
         return devtools_window;
     }
