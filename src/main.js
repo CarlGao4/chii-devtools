@@ -1,4 +1,3 @@
-// 运行在 Electron 主进程 下的插件入口
 const chii = require("chii");
 const net = require("net");
 const { BrowserWindow, ipcMain } = require("electron");
@@ -6,11 +5,9 @@ const { BrowserWindow, ipcMain } = require("electron");
 
 // 获取空闲端口号
 const port = (() => {
-    const server = net.createServer();
-    server.listen(0);
+    const server = net.createServer().listen(0);
     const { port } = server.address();
-    server.close();
-    return port;
+    return server.close() && port;
 })();
 
 
@@ -19,7 +16,7 @@ chii.start({ port });
 
 
 // 把端口传给渲染进程
-ipcMain.handle("LiteLoader.chii_devtools.ready", () => port)
+ipcMain.handle("LiteLoader.chii_devtools.ready", () => port);
 
 
 // 打开DevTools
@@ -27,7 +24,6 @@ async function openDevTools(window) {
     const current_url = window.webContents.getURL();
     const targets_url = `http://localhost:${port}/targets`;
     const targets = await (await fetch(targets_url)).json();
-
     for (const target of targets.targets.reverse()) {
         if (target.url != current_url) {
             continue;
@@ -54,9 +50,7 @@ exports.onBrowserWindowCreated = (window) => {
             }
             else {
                 devtools_window = await openDevTools(window);
-                devtools_window.on("closed", () => {
-                    devtools_window = null;
-                });
+                devtools_window.on("closed", () => devtools_window = null);
             }
         }
     });

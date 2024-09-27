@@ -1,7 +1,17 @@
-// Electron 主进程 与 渲染进程 互相交互的桥梁
-const { contextBridge, ipcRenderer } = require("electron");
+const { ipcRenderer } = require("electron");
 
 
-contextBridge.exposeInMainWorld("chii_devtools", {
-    ready: ipcRenderer.invoke("LiteLoader.chii_devtools.ready")
+function injectChiiDevtools(port) {
+    const script = document.createElement("script");
+    script.defer = "defer";
+    script.src = `http://localhost:${port}/target.js`;
+    document.head.append(script);
+}
+
+
+ipcRenderer.invoke("LiteLoader.chii_devtools.ready").then(port => {
+    injectChiiDevtools(port);
+    navigation.addEventListener("navigatesuccess", () => {
+        injectChiiDevtools(port);
+    });
 });
