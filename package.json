@@ -1,5 +1,5 @@
 {
-  "dependencies": {
-    "chii": "^1.9.0"
-  }
+    "dependencies": {
+        "chii": "^1.14.0"
+    }
 }
